@@ -1,19 +1,19 @@
 credentials:
   usernames:
     admin:
-      email: jsmith@gmail.com
+      email: kunalshrivastava.pune@gmail.com
       logged_in: False # Will be managed automatically
-      name: John Smith
+      name: Admin
       password: admin123 # Will be hashed automatically
     admin1:
-      email: rbriggs@gmail.com
+      email: kunalshrivastava.pune@gmail.com
       logged_in: False # Will be managed automatically
-      name: Rebecca Briggs
+      name: Admin
       password: admin1123 # Will be hashed automatically
 cookie:
   expiry_days: 30
   key: some_signature_key # Must be string
-  name: some_cookie_name
+  name: some_cookie_name1
 preauthorized:
   emails:
-  - melsby@gmail.com
+  - kunalshrivastava.pune@gmail.com
