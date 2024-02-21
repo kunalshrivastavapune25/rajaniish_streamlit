@@ -8,11 +8,15 @@ st.set_page_config(layout="wide")
 
 @st.cache_data
 def get_data_dd(security_name):
-    σ = np.indiavix()
+    σ = get_iv()
     p = np.quote_derivative(security_name)
     df = dd.calculate_deltas(σ,p)
     return df
 
+@st.cache_data
+def get_iv():
+    σ = np.indiavix()
+    return σ
 
 
 if st.session_state["authentication_status"]:
