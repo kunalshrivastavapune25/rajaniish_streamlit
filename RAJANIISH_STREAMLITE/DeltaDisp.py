@@ -87,9 +87,11 @@ def calculate_deltas(σ,p):
 
     merged_df['Spot Price'] = p['underlyingValue'] 
     merged_df['Symbol'] = p['info']['symbol']
-    data = yf.download('SBIN.NS' , dt.date.today() - pd.to_timedelta('500 days'), dt.datetime.today() , interval="1d")
+    ticker = p['info']['symbol'] + '.NS'
+    data = yf.download(ticker , dt.date.today() - pd.to_timedelta('500 days'), dt.datetime.today() , interval="1d")
     std = data["Adj Close"].std()
     merged_df['std'] = std
+    merged_df = merged_df[['Symbol','std','Spot Price','Expiry Date','Strike Price_call','Call Delta','Strike Price_put','Put Delta']]
     return merged_df
 
 
