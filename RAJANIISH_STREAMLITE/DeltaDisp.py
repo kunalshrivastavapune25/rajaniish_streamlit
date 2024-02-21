@@ -2,6 +2,8 @@ import nsepython as np
 import math
 from scipy.stats import norm
 import pandas as pd
+import yfinance as yf
+import datetime as dt
 
 def black_scholes_dexter(S0, X, t, σ, r=7.1, q=0.0, td=365):
     
@@ -25,9 +27,8 @@ def black_scholes_dexter(S0, X, t, σ, r=7.1, q=0.0, td=365):
     
     return call_delta, put_delta
 
-def calculate_deltas(security_name):
-    σ = np.indiavix()
-    p = np.quote_derivative(security_name)
+def calculate_deltas(σ,p):
+
     
     # Creating empty lists to store values
     identifier_list = []
@@ -72,9 +73,27 @@ def calculate_deltas(security_name):
     
     df['Call Delta'] = call_deltas
     df['Put Delta'] = put_deltas
-    return df
+    df['Call Delta'] = pd.to_numeric(df['Call Delta'], errors='coerce')
+    filtered_df = df[df['Call Delta'] <= 0.17]
+    filtered_df = filtered_df.sort_values(by=['Call Delta', 'Identifier'], ascending=[False, False])
+    call_df_final = filtered_df.groupby('Expiry Date').first().reset_index()[['Identifier', 'Strike Price', 'Call Delta','Expiry Date']]
+
+    df['Put Delta'] = pd.to_numeric(df['Put Delta'], errors='coerce')
+    filtered_df = df[df['Put Delta'] >= -0.17]
+    filtered_df = filtered_df.sort_values(by=['Put Delta', 'Identifier'], ascending=[True, False])
+    put_df_final = filtered_df.groupby('Expiry Date').first().reset_index()[['Identifier', 'Strike Price', 'Put Delta','Expiry Date']]
+
+    merged_df = pd.merge(call_df_final, put_df_final, on='Expiry Date', suffixes=('_call', '_put'))
+
+    merged_df['Spot Price'] = p['underlyingValue'] 
+    merged_df['Symbol'] = p['info']['symbol']
+    data = yf.download('SBIN.NS' , dt.date.today() - pd.to_timedelta('500 days'), dt.datetime.today() , interval="1d")
+    std = data["Adj Close"].std()
+    merged_df['std'] = std
+    return merged_df
 
 
-security_name = 'SBIN'
-df = calculate_deltas(security_name)
-print(df)
+
+
+
+
