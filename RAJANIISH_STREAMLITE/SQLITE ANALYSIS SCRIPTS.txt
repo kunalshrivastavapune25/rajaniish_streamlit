@@ -1,0 +1,58 @@
+create table NIFTY_OPTIONS_SCP AS 
+select * from (
+select distinct 
+a.TICKER, 
+expiry_date,
+DATE(date(expiry_date),'-14 days') as start_date,  
+multiplier + cast( atm as integer) as sp   , 
+b.CP,  
+b.REM 
+from
+(select distinct ticker, 
+case when 
+strftime( '%w',date(substr(datetime,1,10)) ) in ('1','2','3')
+then 
+DATE(date(substr(datetime,1,10)), '+' || 
+cast(4-strftime( '%w',date(substr(datetime,1,10)) ) as varchar2(10)) 
+|| ' days')
+else
+DATE(date(substr(datetime,1,10)), '+' || 
+cast(11-strftime( '%w',date(substr(datetime,1,10)) ) as varchar2(10)) 
+|| ' days')
+end as expiry_date,
+
+cast( ROUND( close/ 50.0) * 50 as integer)  as atm
+
+
+ 
+ from nindex_ohlc
+where ticker = 'NIFTY') A,
+(
+select 'ATM' AS REM, 'CALL' AS CP, 0 AS MULTIPLIER UNION
+select 'ATM' AS REM, 'PUT' AS CP, 0 AS MULTIPLIER UNION
+
+select 'ITM1' AS REM, 'CALL' AS CP, -1*50 AS MULTIPLIER UNION
+select 'ITM2' AS REM, 'CALL' AS CP, -2*50 AS MULTIPLIER UNION
+select 'ITM3' AS REM, 'CALL' AS CP, -3*50 AS MULTIPLIER UNION
+select 'ITM4' AS REM, 'CALL' AS CP, -4*50 AS MULTIPLIER UNION
+select 'ITM5' AS REM, 'CALL' AS CP, -5*50 AS MULTIPLIER UNION
+select 'ITM1' AS REM, 'PUT' AS CP, 1*50 AS MULTIPLIER UNION
+select 'ITM2' AS REM, 'PUT' AS CP, 2*50 AS MULTIPLIER UNION
+select 'ITM3' AS REM, 'PUT' AS CP, 3*50 AS MULTIPLIER UNION
+select 'ITM4' AS REM, 'PUT' AS CP, 4*50 AS MULTIPLIER UNION
+select 'ITM5' AS REM, 'PUT' AS CP, 5*50 AS MULTIPLIER UNION
+
+select 'OTM1' AS REM, 'CALL' AS CP, 1*50 AS MULTIPLIER UNION
+select 'OTM2' AS REM, 'CALL' AS CP, 2*50 AS MULTIPLIER UNION
+select 'OTM3' AS REM, 'CALL' AS CP, 3*50 AS MULTIPLIER UNION
+select 'OTM4' AS REM, 'CALL' AS CP, 4*50 AS MULTIPLIER UNION
+select 'OTM5' AS REM, 'CALL' AS CP, 5*50 AS MULTIPLIER UNION
+select 'OTM1' AS REM, 'PUT' AS CP, -1*50 AS MULTIPLIER UNION
+select 'OTM2' AS REM, 'PUT' AS CP, -2*50 AS MULTIPLIER UNION
+select 'OTM3' AS REM, 'PUT' AS CP, -3*50 AS MULTIPLIER UNION
+select 'OTM4' AS REM, 'PUT' AS CP, -4*50 AS MULTIPLIER UNION
+select 'OTM5' AS REM, 'PUT' AS CP, -5*50 AS MULTIPLIER 
+
+) B)
+
+
