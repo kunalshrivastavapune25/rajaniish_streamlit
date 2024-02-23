@@ -92,6 +92,7 @@ def calculate_deltas(σ,p):
     std = data["Adj Close"].std()
     merged_df['std'] = std
     merged_df = merged_df[['Symbol','std','Spot Price','Expiry Date','Strike Price_call','Call Delta','Strike Price_put','Put Delta']]
+
     return merged_df
 
 

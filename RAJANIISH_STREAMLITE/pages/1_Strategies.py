@@ -1,19 +1,23 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import nsepython as npy
 import DeltaDisp as dd
+import Database as db
+import pull_nse100 as pn100
+import pull_nseindex as pnidx
 st.set_page_config(layout="wide")
 
 @st.cache_data
 def get_data_dd(security_name):
     σ = get_iv()
-    p = np.quote_derivative(security_name)
+    p = npy.quote_derivative(security_name)
     df = dd.calculate_deltas(σ,p)
     return df
 
 @st.cache_data
 def get_iv():
-    σ = np.indiavix()
+    σ = npy.indiavix()
     return σ
 
 
@@ -23,9 +27,11 @@ if st.session_state["authentication_status"]:
 
     st.markdown("#### Delta Disparity")
     with st.expander("Click to Expand"):
-        df = pd.concat([get_data_dd('ITC'),get_data_dd('SBIN'),
-                        get_data_dd('HDFCBANK')])
-        st.write(df)
+        if st.button(label="Check", key="eqbutton11"):
+            df = pd.concat([get_data_dd('ITC'),get_data_dd('SBIN'),
+                            get_data_dd('HDFCBANK')])
+            df = df.reset_index(drop=True)
+            st.dataframe(data= df,hide_index=True)
         
        #with st.form("population-form"):
          
@@ -44,44 +50,39 @@ if st.session_state["authentication_status"]:
             # submit_btn = st.form_submit_button("Generate", type="primary")
 
 
-    st.divider()
-
     st.markdown("#### History Details")
     with st.expander("Click to Expand"):
-        with st.form("population-form1"):
-            col1, col2, col3, col4  = st.columns(4)
-            with col1:
-                st.write("Equity")
-                st.write("Index")
-                st.write("Options")                
-            with col2:
-                options = ['Option 1', 'Option 2', 'Option 3']
-                options1 = ['Option 1', 'Option 2', 'Option 3']
-                options2 = ['Option 1', 'Option 2', 'Option 3']
-                selected_option = st.selectbox('Select an option:', options , key = '1' )
-                selected_option1 = st.selectbox('Select an option:', options1 , key = '2')
-                selected_option2 = st.selectbox('Select an option:', options2 , key = '3' )
-            with col3:
-                options3 = ['Option 1', 'Option 2', 'Option 3']
-                options4 = ['Option 1', 'Option 2', 'Option 3']
-                options5 = ['Option 1', 'Option 2', 'Option 3']
-                selected_option3 = st.selectbox('Select an option:', options3, key = '4')
-                selected_option4 = st.selectbox('Select an option:', options4, key = '5')
-                selected_option5 = st.selectbox('Select an option:', options5, key = '6')
-            with col4:
-                options6 = ['Option 1', 'Option 2', 'Option 3']
-                options7 = ['Option 1', 'Option 2', 'Option 3']             
-                selected_option6 = st.selectbox('Select an option:', options6, key = '7')
-                selected_option7 = st.selectbox('Select an option:', options7, key = '8')
-
-            submit_btn = st.form_submit_button("OK", type="primary")
 
 
+        ini_val = """select 'Nifty100' as DATA, count(distinct ticker) INSTRUMENT_CNT, COUNT(1) TOTAL_DATA_CNT,
+         MIN(DATETIME) START_DATE, MAX(DATETIME) END_DATE
+         from N100_OHLC
+        UNION
+        select 'NiftyINDEX' as DATA, count(distinct ticker) INSTRUMENT_CNT, COUNT(1) TOTAL_DATA_CNT,
+         MIN(DATETIME) START_DATE, MAX(DATETIME) END_DATE
+         from NINDEX_OHLC
+         UNION
+         select * from tab_summary"""
+        equity_query =  st.text_area(label="Status",value=ini_val)
+        
 
-
-
-
-
+        if st.button(label="Check", key="eqbutton"):
+            st.dataframe(data= db.get_data(equity_query)  ,hide_index=True,use_container_width=True)
+        if st.button(label="Update ALL Tables to till Date", key="eqrefbutton"):
+            rstr = pn100.get_delta_data()
+            rstr1 = pnidx.get_delta_data()
+            rstr2 = db.resample_tabs()
+            # st.write(rstr + ' for N100')
+            # st.write(rstr1 + ' for NINDEX')
+            st.dataframe(data= db.get_data(equity_query)  ,hide_index=True,use_container_width=True)
+        # if st.button(label="Check 1day,1hr,15m tables", key="TABbutton"):
+        #     df_full_tabs = db.get_data("select * from tab_summary" )
+        #     st.write(df_full_tabs)
+        # if st.button(label="Recreate 1day,1hr,15m tables", key="TABbutton1"):     
+                    
+        #     rstr = db.resample_tabs()
+            st.success('Done')
+            
 elif st.session_state["authentication_status"] is False:
     st.error('Username/password is incorrect')
 elif st.session_state["authentication_status"] is None:
