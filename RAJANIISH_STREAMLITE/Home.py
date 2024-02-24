@@ -31,26 +31,38 @@ if st.session_state["authentication_status"]:
     authenticator.logout()
     st.markdown(f'#### Welcome *{st.session_state["name"]}*')
 
-    col1, col2 = st.columns(2)
+    # col1, col2 = st.columns(2)
 
-    col3, empty_col, col4 = st.columns([1.5, 0.05, 1.5])
+    # col3, empty_col, col4 = st.columns([1.5, 0.05, 1.5])
 
-    df = pandas.read_csv("Strategies_data.csv", sep=";")
+    # df = pandas.read_csv("Strategies_data.csv", sep=";")
 
-    with col3:
-        for index, row in df[:1].iterrows():
-            st.subheader(row["title"])
-            st.write(row["description"])
-            st.image("images/" + row["image"], width=200)
-            st.write(f"[Source Code]({row['url']})")
+    # with col3:
+    #     for index, row in df[:1].iterrows():
+    #         st.subheader(row["title"])
+    #         st.write(row["description"])
+    #         st.image("images/" + row["image"], width=200)
+    #         st.write(f"[Source Code]({row['url']})")
 
 
-    with col4:
-        for index, row in df[1:].iterrows():
-            st.subheader(row["title"])
-            st.write(row["description"])
-            st.image("images/" + row["image"], width=200)
-            st.write(f"[Source Code]({row['url']})")
+    # with col4:
+    #     for index, row in df[1:].iterrows():
+    #         st.subheader(row["title"])
+    #         st.write(row["description"])
+    #         st.image("images/" + row["image"], width=200)
+    #         st.write(f"[Source Code]({row['url']})")
+    
+    
+
+
+
+    
+    # Add an image at full width
+    st.image("Capture.JPG", width=None)
+    
+    # Add some text
+
+
 
 elif st.session_state["authentication_status"] is False:
     st.error('Username/password is incorrect')

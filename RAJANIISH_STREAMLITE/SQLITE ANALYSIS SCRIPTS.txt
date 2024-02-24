@@ -55,53 +55,199 @@ select 'OTM5' AS REM, 'PUT' AS CP, -5*50 AS MULTIPLIER
 
 ) B)
 
-drop table N100_OHLC_1H;
-create table N100_OHLC_1H AS
-SELECT 
-    strftime('%Y-%m-%d %H:00:00', Datetime) AS Datetime,
-    ticker,
-    FIRST_VALUE(Open) OVER (ORDER BY  Datetime) AS Open,
-    MAX(High) AS High,
-    MIN(Low) AS Low,
-    LAST_VALUE(Close) OVER (ORDER BY  Datetime) AS Close,
-    SUM(Volume) AS Volume
-FROM N100_OHLC
-GROUP BY strftime('%Y-%m-%d %H:00:00', Datetime), ticker
-
-drop table N100_OHLC_1D;
-create table N100_OHLC_1D AS
-SELECT 
-    strftime('%Y-%m-%d 00:00:00', Datetime) AS Datetime,
-    ticker,
-    FIRST_VALUE(Open) OVER (ORDER BY  Datetime) AS Open,
-    MAX(High) AS High,
-    MIN(Low) AS Low,
-    LAST_VALUE(Close) OVER (ORDER BY  Datetime) AS Close,
-    SUM(Volume) AS Volume
-FROM N100_OHLC
-GROUP BY strftime('%Y-%m-%d 00:00:00', Datetime), ticker
-
-
-select Datetime,
-substr(Datetime,1,14) ||
-substr(replace(cast(15* (cast(substr(Datetime,15,2) as integer)/15 ) as text),'0','00'),1,2) 
-|| ':00'
- from N100_OHLC
  
-drop table N100_OHLC_15M; 
-create table N100_OHLC_15M AS
-SELECT 
-    substr(Datetime,1,14) ||
-substr(replace(cast(15* (cast(substr(Datetime,15,2) as integer)/15 ) as text),'0','00'),1,2) 
-|| ':00' AS Datetime,
-    ticker,
-    FIRST_VALUE(Open) OVER (ORDER BY  Datetime) AS Open,
-    MAX(High) AS High,
-    MIN(Low) AS Low,
-    LAST_VALUE(Close) OVER (ORDER BY  Datetime) AS Close,
-    SUM(Volume) AS Volume
-FROM N100_OHLC
-GROUP BY substr(Datetime,1,14) ||
-substr(replace(cast(15* (cast(substr(Datetime,15,2) as integer)/15 ) as text),'0','00'),1,2) 
-|| ':00', ticker
  
+ 
+create table NIFTY_OPTIONS_SCP1 as 
+select distinct date(expiry_date) expiry_date,cp,cast(sp as integer) from NIFTY_OPTIONS_SCP
+except
+select distinct date (
+'20' || substr(expiry_date, 8, 2) || 
+            '-' || 
+            CASE substr(expiry_date, 4, 3)
+                WHEN 'JAN' THEN '01'
+                WHEN 'FEB' THEN '02'
+                WHEN 'MAR' THEN '03'
+                WHEN 'APR' THEN '04'
+                WHEN 'MAY' THEN '05'
+                WHEN 'JUN' THEN '06'
+                WHEN 'JUL' THEN '07'
+                WHEN 'AUG' THEN '08'
+                WHEN 'SEP' THEN '09'
+                WHEN 'OCT' THEN '10'
+                WHEN 'NOV' THEN '11'
+                WHEN 'DEC' THEN '12'
+            END || '-' || substr(expiry_date, 1, 2) ) as expiry_date, upper(right), 
+			cast(strike_price as integer)
+
+ from df_f
+ 
+
+
+select * from NIFTY_OPTIONS_SCP1
+
+create table NIFTY_OPTIONS_SCP2 as
+select distinct ticker,expiry_date,start_date , sp,CP from NIFTY_OPTIONS_SCP
+where ( date(expiry_date) ,cp,cast(sp as integer)) 
+in ( select *  from NIFTY_OPTIONS_SCP1)
+
+
+create table nniftyoptions_ohlc as
+select distinct datetime,stock_code,expiry_date,right,strike_price,
+open,high,low, close,volume,open_interest
+ from df_f1
+union 
+select distinct datetime,stock_code,expiry_date,right,strike_price,
+open,high,low, close,volume,open_interest
+ from df_f 
+ 
+ 
+ select * from nniftyoptions_ohlc where 
+(datetime,stock_code,expiry_date,right,strike_price,open_interest) in 
+( SELECT a.datetime,stock_code,expiry_date,right,strike_price
+, MAX(open_interest)
+
+FROM nniftyoptions_ohlc a
+group by a.datetime,stock_code,expiry_date,right,strike_price
+having count(1)>1
+)
+
+delete from nniftyoptions_ohlc where ROWID in 
+( SELECT  MIN(ROWID)
+
+FROM nniftyoptions_ohlc a
+group by a.datetime,stock_code,expiry_date,right,strike_price
+having count(1)>1 
+)
+
+
+
+----------------create delta table ------------------------
+
+create table NIFTY_OPTIONS_SCP AS 
+select * from (
+select distinct 
+a.TICKER, 
+expiry_date,
+DATE(date(expiry_date),'-14 days') as start_date,  
+multiplier + cast( atm as integer) as sp   , 
+b.CP,  
+b.REM 
+from
+(select distinct ticker, 
+case when 
+strftime( '%w',date(substr(datetime,1,10)) ) in ('1','2','3')
+then 
+DATE(date(substr(datetime,1,10)), '+' || 
+cast(4-strftime( '%w',date(substr(datetime,1,10)) ) as varchar2(10)) 
+|| ' days')
+else
+DATE(date(substr(datetime,1,10)), '+' || 
+cast(11-strftime( '%w',date(substr(datetime,1,10)) ) as varchar2(10)) 
+|| ' days')
+end as expiry_date,
+
+cast( ROUND( close/ 50.0) * 50 as integer)  as atm
+
+
+ 
+ from nindex_ohlc
+where ticker = 'NIFTY') A,
+(
+select 'ATM' AS REM, 'CALL' AS CP, 0 AS MULTIPLIER UNION
+select 'ATM' AS REM, 'PUT' AS CP, 0 AS MULTIPLIER UNION
+
+select 'ITM1' AS REM, 'CALL' AS CP, -1*50 AS MULTIPLIER UNION
+select 'ITM2' AS REM, 'CALL' AS CP, -2*50 AS MULTIPLIER UNION
+select 'ITM3' AS REM, 'CALL' AS CP, -3*50 AS MULTIPLIER UNION
+select 'ITM4' AS REM, 'CALL' AS CP, -4*50 AS MULTIPLIER UNION
+select 'ITM5' AS REM, 'CALL' AS CP, -5*50 AS MULTIPLIER UNION
+select 'ITM1' AS REM, 'PUT' AS CP, 1*50 AS MULTIPLIER UNION
+select 'ITM2' AS REM, 'PUT' AS CP, 2*50 AS MULTIPLIER UNION
+select 'ITM3' AS REM, 'PUT' AS CP, 3*50 AS MULTIPLIER UNION
+select 'ITM4' AS REM, 'PUT' AS CP, 4*50 AS MULTIPLIER UNION
+select 'ITM5' AS REM, 'PUT' AS CP, 5*50 AS MULTIPLIER UNION
+
+select 'OTM1' AS REM, 'CALL' AS CP, 1*50 AS MULTIPLIER UNION
+select 'OTM2' AS REM, 'CALL' AS CP, 2*50 AS MULTIPLIER UNION
+select 'OTM3' AS REM, 'CALL' AS CP, 3*50 AS MULTIPLIER UNION
+select 'OTM4' AS REM, 'CALL' AS CP, 4*50 AS MULTIPLIER UNION
+select 'OTM5' AS REM, 'CALL' AS CP, 5*50 AS MULTIPLIER UNION
+select 'OTM1' AS REM, 'PUT' AS CP, -1*50 AS MULTIPLIER UNION
+select 'OTM2' AS REM, 'PUT' AS CP, -2*50 AS MULTIPLIER UNION
+select 'OTM3' AS REM, 'PUT' AS CP, -3*50 AS MULTIPLIER UNION
+select 'OTM4' AS REM, 'PUT' AS CP, -4*50 AS MULTIPLIER UNION
+select 'OTM5' AS REM, 'PUT' AS CP, -5*50 AS MULTIPLIER 
+
+) B)
+
+
+delete from NIFTY_OPTIONS_SCP 
+where date(expiry_date) > date('2024-02-24');
+
+
+
+
+select * from nniftyoptions_ohlc
+
+
+drop table NIFTY_OPTIONS_SCP1
+
+create table NIFTY_OPTIONS_SCP1 as 
+select distinct ticker,expiry_date,start_date , sp,CP from NIFTY_OPTIONS_SCP
+where ( date(expiry_date) ,cp,cast(sp as integer)) 
+in (
+
+select distinct date(expiry_date) expiry_date,cp,cast(sp as integer) from NIFTY_OPTIONS_SCP
+except
+select distinct date (
+'20' || substr(expiry_date, 8, 2) || 
+            '-' || 
+            CASE substr(expiry_date, 4, 3)
+                WHEN 'JAN' THEN '01'
+                WHEN 'FEB' THEN '02'
+                WHEN 'MAR' THEN '03'
+                WHEN 'APR' THEN '04'
+                WHEN 'MAY' THEN '05'
+                WHEN 'JUN' THEN '06'
+                WHEN 'JUL' THEN '07'
+                WHEN 'AUG' THEN '08'
+                WHEN 'SEP' THEN '09'
+                WHEN 'OCT' THEN '10'
+                WHEN 'NOV' THEN '11'
+                WHEN 'DEC' THEN '12'
+            END || '-' || substr(expiry_date, 1, 2) ) as expiry_date, upper(right), 
+			cast(strike_price as integer)
+
+ from nniftyoptions_ohlc)
+ 
+ 
+ select * from NIFTY_OPTIONS_SCP1
+ 
+ drop table df_f1
+ 
+ run python pull_NIFTYOPTIONS.py
+ 
+ drop table df_f 
+ create table df_f as select * from nniftyoptions_ohlc
+ select count(1) from nniftyoptions_ohlc
+select count(1) from df_f
+ 
+ drop table nniftyoptions_ohlc;
+ 
+ create table nniftyoptions_ohlc as
+select distinct datetime,stock_code,expiry_date,right,strike_price,
+open,high,low, close,volume,open_interest
+ from df_f1
+union 
+select distinct datetime,stock_code,expiry_date,right,strike_price,
+open,high,low, close,volume,open_interest
+ from df_f 
+
+
+SELECT a.datetime,stock_code,expiry_date,right,strike_price
+, MAX(open_interest)
+
+FROM nniftyoptions_ohlc a
+group by a.datetime,stock_code,expiry_date,right,strike_price
+having count(1)>1

@@ -62,7 +62,11 @@ if st.session_state["authentication_status"]:
          MIN(DATETIME) START_DATE, MAX(DATETIME) END_DATE
          from NINDEX_OHLC
          UNION
-         select * from tab_summary"""
+         select * from tab_summary
+         UNION
+        select 'niftyoptions' as DATA, count(distinct strike_price) INSTRUMENT_CNT, COUNT(1) TOTAL_DATA_CNT,
+         MIN(DATETIME) START_DATE, MAX(DATETIME) END_DATE
+         from nniftyoptions_ohlc"""
         equity_query =  st.text_area(label="Status",value=ini_val)
         
 

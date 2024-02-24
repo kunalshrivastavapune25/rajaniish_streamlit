@@ -14,7 +14,7 @@ print("https://api.icicidirect.com/apiuser/login?api_key="+urllib.parse.quote_pl
 
 # Generate Session
 breeze.generate_session(api_secret="q7c132Q68087876e5z30042l331bD03Y",
-                        session_token="35395957")
+                        session_token="35510576")
 
 # Generate ISO8601 Date/DateTime String
 iso_date_string = datetime.datetime.strptime("28/02/2021","%d/%m/%Y").isoformat()[:10] + 'T05:30:00.000Z'
@@ -33,7 +33,7 @@ cur = conn.cursor()
 
 #df_full.to_sql('df_f', conn, if_exists='replace', index=True) # - writes the pd.df to SQLIte DB
 
-NIFTY_OPTIONS_SCP = pd.read_sql_query('select * from NIFTY_OPTIONS_SCP', conn)
+NIFTY_OPTIONS_SCP = pd.read_sql_query('select * from NIFTY_OPTIONS_SCP1', conn)
 
 NIFTY_OPTIONS_SCP_head = NIFTY_OPTIONS_SCP
 
@@ -91,20 +91,6 @@ for index, row in NIFTY_OPTIONS_SCP_head.iterrows():
 
 
 
-df_full.to_sql('df_f', conn, if_exists='replace', index=True) # - writes the pd.df to SQLIte DB
-
-
-
-cur.execute('''DROP TABLE IF EXISTS df_o''')
-
-
-df.to_sql('df_o', conn, if_exists='replace', index=True) # - writes the pd.df to SQLIte DB
-
-cur.execute('''DROP TABLE IF EXISTS df_f''')
-
-
-df_full.to_sql('df_f', conn, if_exists='replace', index=True) # - writes the pd.df to SQLIte DB
-
-
+df_full.to_sql('df_f1', conn, if_exists='replace', index=True) # - writes the pd.df to SQLIte DB
 
 conn.close()
