@@ -67,17 +67,20 @@ grouped = df.groupby('ticker')
 dict_of_dfs = {key: group.reset_index(drop=True) for key, group in grouped}
 tickers = dict_of_dfs.keys()
 
+table_name = 'N100_OHLC_1D_FULL'
+db.drop_data('N100_OHLC_1D_FULL',sql_data)
 for ticker in tickers:
     dict_of_dfs[ticker].dropna(inplace=True)
     if len(dict_of_dfs[ticker]) > 50:
         print("merging for ",ticker)
         df =  dict_of_dfs[ticker]
-        dict_of_dfs[ticker]["ST"] =  supertrend(dict_of_dfs[ticker],7,3)
-        dict_of_dfs[ticker]["sti"] = pt.supertrend(df['High'], df['Low'], df['Close'], length=7, multiplier=3)
+        df[['Open', 'High','Low','Close']].astype(float)
+        #dict_of_dfs[ticker]["ST"] =  supertrend(dict_of_dfs[ticker],7,3)
+        dict_of_dfs[ticker]["ST"] = pt.supertrend(df['High'], df['Low'], df['Close'], length=7, multiplier=3)['SUPERT_7_3.0']
         dict_of_dfs[ticker]["BollBnd"] = BollBnd(dict_of_dfs[ticker],20)["BB_up"]
         dict_of_dfs[ticker]["BollBnd_dn"] = BollBnd(dict_of_dfs[ticker],20)["BB_dn"]
         dict_of_dfs[ticker][['lower_band', 'mid', 'upper_band' ]] = pt.bbands(df['Close'], length=20, std=2).iloc[:, :3]
-        table_name = 'N100_OHLC_1D_FULL'
+
         df =  dict_of_dfs[ticker] 
         db.insert_data(table_name, df,sql_data )
 
@@ -85,7 +88,7 @@ for ticker in tickers:
 
 
 
-
+df = pd.read_csv('Backtest Stocks closing below the supertrend line, Technical Analysis Scanner.csv')
 
 db.drop_data('N100_TEST',sql_data)
 db.insert_data('N100_TEST', df,sql_data )
