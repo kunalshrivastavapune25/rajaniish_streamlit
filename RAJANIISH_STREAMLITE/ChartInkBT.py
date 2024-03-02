@@ -123,7 +123,7 @@ db.drop_data('N100_TEST_HP' ,sql_data)
 db.execute_qry("""create table N100_TEST_HP as 
           select a.*, (select b.close from N100_OHLC_1D_FULL b 
                        where a.symbol = b.ticker 
-                       and date(b.datetime) = date(a.HD) AS HP
+                       and date(b.datetime) = date(a.HD) ) AS HP
           from N100_TEST_HD a """ ,sql_data)
 df = db.get_data('SELECT * FROM N100_TEST_HP',sql_data)
 
@@ -132,7 +132,7 @@ df = db.get_data('SELECT * FROM N100_TEST_HP',sql_data)
 
 db.drop_data('N100_TEST_D' ,sql_data)
 db.execute_qry("""create table N100_TEST_D as 
-          select a.*, date(HD) -date( date) AS D
+          select a.*, julianday(date(HD)) - julianday(date( date)) AS D
           from N100_TEST_HP a """ ,sql_data)
 df = db.get_data('SELECT * FROM N100_TEST_D',sql_data)
 
@@ -142,7 +142,7 @@ db.drop_data('N100_TEST_MP' ,sql_data)
 db.execute_qry("""create table N100_TEST_MP as 
           select a.*, (select MAX(b.close) from N100_OHLC_1D_FULL b 
                        where a.symbol = b.ticker 
-                       and  date(b.datetime)  between date(date) and date( HD)  ) AS MP
+                       and  date(b.datetime)  between date(a.date) and date( a.HD)  ) AS MP
           from N100_TEST_D a """ ,sql_data)
 df = db.get_data('SELECT * FROM N100_TEST_MP',sql_data)
 
@@ -152,7 +152,7 @@ db.drop_data('N100_TEST_MNP' ,sql_data)
 db.execute_qry("""create table N100_TEST_MNP as 
           select a.*, (select MIN(b.close) from N100_OHLC_1D_FULL b 
                        where a.symbol = b.ticker 
-                       and  date(b.datetime)  between date(date) and date( HD)) AS MNP
+                       and  date(b.datetime)  between date(a.date) and date( a.HD)) AS MNP
           from N100_TEST_MP a """ ,sql_data)
 df = db.get_data('SELECT * FROM N100_TEST_MNP',sql_data)
 

@@ -5,6 +5,22 @@ credentials:
       logged_in: False # Will be managed automatically
       name: Admin
       password: admin123 # Will be hashed automatically
+    kunal:
+      email: kunalshrivastava.pune@gmail.com
+      logged_in: False # Will be managed automatically
+      name: kunal
+      password: kunal # Will be hashed automatically
+    anand:
+      email: kunalshrivastava.pune@gmail.com
+      logged_in: False # Will be managed automatically
+      name: anand
+      password: anand # Will be hashed automatically
+    rahul:
+      email: kunalshrivastava.pune@gmail.com
+      logged_in: False # Will be managed automatically
+      name: rahul
+      password: rahul # Will be hashed automatically
+
     admin1:
       email: kunalshrivastava.pune@gmail.com
       logged_in: False # Will be managed automatically

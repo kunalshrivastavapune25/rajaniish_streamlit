@@ -109,3 +109,5 @@ def get_delta_data():
         df_full = df_full[['Datetime','Open','High','Low','Close','Volume','ticker','Date']]
         db.insert_data('N100_OHLC', df_full)
     return 'ALL DONE'
+
+
