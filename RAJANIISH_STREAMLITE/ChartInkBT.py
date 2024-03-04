@@ -86,7 +86,7 @@ for ticker in tickers:
 
         
 
-
+#df["ST"] = pt.supertrend(df['High'], df['Low'], df['Close'], length=10, multiplier=3)['SUPERT_' + '10' + '_3.0']
 
 df = pd.read_csv('Backtest Stocks closing below the supertrend line, Technical Analysis Scanner.csv')
 

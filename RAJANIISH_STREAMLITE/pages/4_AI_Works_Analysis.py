@@ -1,29 +1,35 @@
 
 import streamlit as st
-import pandas
+
+from transformers import pipeline
 st.set_page_config(layout="wide")
 col1, col2 = st.columns(2)
 
 if st.session_state["authentication_status"]:
 
-    col3, empty_col, col4 = st.columns([1.5, 0.05, 1.5])
 
-    df = pandas.read_csv("AI_Works_Analysis.csv", sep=";")
+# Load sentiment analysis pipeline
+    sentiment_classifier = pipeline("sentiment-analysis")
+    
+    # Streamlit UI
+    st.title('Sentiment Analysis Demo')
+    
+    # Text input for user to enter text
+    user_text = st.text_area("Enter text for sentiment analysis:")
+    
+    # Perform sentiment analysis when button is clicked
+    if st.button("Analyze Sentiment"):
+        if user_text:
+            # Perform sentiment analysis on user input
+            sentiment_result = sentiment_classifier(user_text)
+            # Display sentiment analysis result
+            st.write(f"Sentiment: {sentiment_result[0]['label']}")
+            st.write(f"Confidence: {sentiment_result[0]['score']:.2f}")
+        else:
+            st.warning("Please enter some text for analysis.")
 
-    with col3:
-        for index, row in df[:1].iterrows():
-            st.header(row["title"])
-            st.write(row["description"])
-            st.image("images/" + row["image"])
-            st.write(f"[Source Code]({row['url']})")
+    
 
-
-    with col4:
-        for index, row in df[1:].iterrows():
-            st.header(row["title"])
-            st.write(row["description"])
-            st.image("images/" + row["image"])
-            st.write(f"[Source Code]({row['url']})")
 elif st.session_state["authentication_status"] is False:
     st.error('Username/password is incorrect')
 elif st.session_state["authentication_status"] is None:

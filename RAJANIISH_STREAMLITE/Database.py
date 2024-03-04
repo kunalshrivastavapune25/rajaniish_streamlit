@@ -13,7 +13,7 @@ def insert_data(table_name,df,sql_data = 'C:\\NSE\\SA.sqlite2'):
     conn = sq.connect(sql_data)
     c = conn.cursor()  
     c.execute('DROP TABLE IF EXISTS ' + table_name + '_TEMP' )
-    df.to_sql(table_name + '_TEMP', conn , if_exists='replace', index=True) # - writes the pd.df to SQLIte DB
+    df.to_sql(table_name + '_TEMP', conn , if_exists='replace', index=False) # - writes the pd.df to SQLIte DB
     c.execute('CREATE TABLE IF NOT EXISTS ' + table_name + ' AS select * from ' + table_name + '_TEMP where 1=2'   )
     c.execute('insert into ' + table_name + ' select * from ' + table_name + '_TEMP'   )
     conn.commit()
@@ -46,4 +46,14 @@ def execute_qry(qry,sql_data = 'C:\\NSE\\SA.sqlite2'):
     c = conn.cursor()  
     c.execute(qry )
     conn.commit()
-    conn.close()    
+    conn.close() 
+    
+def create_index(idx_name,tab_name,col_name,sql_data = 'C:\\NSE\\SA.sqlite2'):
+    #sql_data = 'C:\\NSE\\SA.sqlite2' #- Creates DB names SQLite
+    conn = sq.connect(sql_data)
+    c = conn.cursor()  
+    qry  = """ CREATE INDEX IF NOT EXISTS """ + idx_name + """ 
+    ON """ + tab_name + """( """ + col_name + """);"""
+    c.execute(qry )
+    conn.commit()
+    conn.close()        
