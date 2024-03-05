@@ -325,6 +325,25 @@ try:
                 db.insert_data(target_data_tab_name, target_data,sql_data )  
                 st.success(target_data_tab_name + ' Created !!')            
                 
+                db.execute_qry("""update entry_tab set date = 
+substr(date,7,4) 
+|| '-' || 
+substr(date,4,2) 
+|| '-' || 
+substr(date,1,2) 
+|| 
+case when substr(date,11,15) <> '' then '-' || substr(date,11,15) else '' end """,sql_data)
+
+                db.execute_qry("""update exit_tab set date = 
+substr(date,7,4) 
+|| '-' || 
+substr(date,4,2) 
+|| '-' || 
+substr(date,1,2) 
+|| 
+case when substr(date,11,15) <> '' then '-' || substr(date,11,15) else '' end """,sql_data)
+
+                
                 db.create_index("I1",entry_data_tab_name,"date(date)",sql_data)
                 db.create_index("I2",target_data_tab_name,"date(date)",sql_data)
                 
