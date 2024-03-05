@@ -289,7 +289,7 @@ try:
             entry_uploaded_file = st.file_uploader("Choose a entryPoint CSV file", type="csv", key='e')
             if entry_uploaded_file is not None:
                 entry_data = pd.read_csv(entry_uploaded_file)
-            target_uploaded_file = st.file_uploader("Choose a entryPoint CSV file", type="csv",key='t')
+            target_uploaded_file = st.file_uploader("Choose a exitPoint CSV file", type="csv",key='t')
             if target_uploaded_file is not None:
                 target_data = pd.read_csv(target_uploaded_file)    
                 
@@ -309,7 +309,9 @@ try:
                 main_tab_df = db.get_data('select * from ' + main_tab)    
                 entry_data_tab_name = 'ENTRY_TAB'
                 target_data_tab_name = 'EXIT_TAB'
-                username = 'anand'
+                #username = 'anand'
+                username = st.session_state["name"]
+                
                 sql_data = 'C:\\NSE\\SA.sqlite' + username #- Creates DB names SQLite
                 st.write(sql_data)  
                 
