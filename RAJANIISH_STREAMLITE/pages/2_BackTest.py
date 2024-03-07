@@ -467,22 +467,37 @@ case when substr(date,11,15) <> '' then '-' || substr(date,11,15) else '' end ""
                 
                 db.drop_data(entry_data_tab_name + '_SUMM',sql_data)
                 df = db.get_data("""select
+
 Symbol,
+
 min(date) as Trade_Start_Date,
+
 COUNT(1) as Number_of_trades,
+
 round(avg(duration)) Avg_no_of_days_in_trade,
-sum(
-case when pl < 0 then 1 else 0 end ) Loss_Making_Trades,
 
-round(100 * sum(
-case when pl < 0 then 0 else 1 end ) / COUNT(1)) Profitable_trades_PCT,
+sum(case when pl < 0 then 1 else 0 end ) Loss_Making_Trades,
 
-julianday(max(date)) -  julianday(min(date)) Total_number_of_days,
-round(100* sum(duration) /
-(julianday(max(date)) -  julianday(min(date)) )) as pct_of_time_capital_was_deployed,
-max(hp)-min(ep) as Total_journey_of_stock,
+round(100 * sum(case when pl < 0 then 0 else 1 end ) / COUNT(1)) Profitable_trades_PCT,
+
+julianday(DATE('now') ) -  julianday(min(date)) Total_number_of_days,
+
+round(100* sum(duration) /(julianday(DATE('now') ) -  julianday(min(date)) )) as pct_of_time_capital_was_deployed,
+
+(select first_VALUE(close) OVER (PARTITION BY ticker ORDER BY date(datetime) desc)
+from  N100_OHLC_1D c where c.ticker =  b.symbol )
+-
+(select first_value(ep) OVER (PARTITION BY Symbol ORDER BY date(date)) 
+from  ENTRY_TAB_MINP c where c.symbol =  b.symbol )
+
+
+AS Total_journey_of_stock,
 sum(pl) as act_point_cap,
+max(pl) max_P,
+min(pl) max_L
+,
 round(100*sum(pl)/(max(hp)-min(ep))) as act_point_cap_pct
+
 from
 (select a.*, 
 round(hp-ep) as pl,
@@ -491,22 +506,37 @@ from ENTRY_TAB_MINP a) b
 group by Symbol""",sql_data)
                 db.insert_data(entry_data_tab_name + '_SUMM', df,sql_data )  
                 st.write("""select
+
 Symbol,
+
 min(date) as Trade_Start_Date,
+
 COUNT(1) as Number_of_trades,
+
 round(avg(duration)) Avg_no_of_days_in_trade,
-sum(
-case when pl < 0 then 1 else 0 end ) Loss_Making_Trades,
 
-round(100 * sum(
-case when pl < 0 then 0 else 1 end ) / COUNT(1)) Profitable_trades_PCT,
+sum(case when pl < 0 then 1 else 0 end ) Loss_Making_Trades,
 
-julianday(max(date)) -  julianday(min(date)) Total_number_of_days,
-round(100* sum(duration) /
-(julianday(max(date)) -  julianday(min(date)) )) as pct_of_time_capital_was_deployed,
-max(hp)-min(ep) as Total_journey_of_stock,
+round(100 * sum(case when pl < 0 then 0 else 1 end ) / COUNT(1)) Profitable_trades_PCT,
+
+julianday(DATE('now') ) -  julianday(min(date)) Total_number_of_days,
+
+round(100* sum(duration) /(julianday(DATE('now') ) -  julianday(min(date)) )) as pct_of_time_capital_was_deployed,
+
+(select first_VALUE(close) OVER (PARTITION BY ticker ORDER BY date(datetime) desc)
+from  N100_OHLC_1D c where c.ticker =  b.symbol )
+-
+(select first_value(ep) OVER (PARTITION BY Symbol ORDER BY date(date)) 
+from  ENTRY_TAB_MINP c where c.symbol =  b.symbol )
+
+
+AS Total_journey_of_stock,
 sum(pl) as act_point_cap,
+max(pl) max_P,
+min(pl) max_L
+,
 round(100*sum(pl)/(max(hp)-min(ep))) as act_point_cap_pct
+
 from
 (select a.*, 
 round(hp-ep) as pl,

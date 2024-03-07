@@ -50,7 +50,7 @@ if st.session_state["authentication_status"]:
             # submit_btn = st.form_submit_button("Generate", type="primary")
 
 
-    st.markdown("#### History Details")
+    st.markdown("#### Do Not Execute")
     with st.expander("Click to Expand"):
 
 
@@ -86,6 +86,77 @@ if st.session_state["authentication_status"]:
                     
         #     rstr = db.resample_tabs()
             st.success('Done')
+
+    st.markdown("#### Tables Details")
+    with st.expander("Click to Expand"):
+       
+        col1, col2, col3, col4, col5 = st.columns(5)
+        with col1:
+            st.markdown("**Category**")
+            st.write('Nifty100')
+            st.write('Nifty100')
+            st.write('Nifty100')
+            st.write('Nifty100')
+            st.write('INDEX')
+            st.write('INDEX')            
+            st.write('INDEX')
+            st.write('INDEX')
+            st.write('NIFTYOPT')
+            st.write('NIFTYOPT')            
+            st.write('NIFTYOPT')
+            st.write('NIFTYOPT')
+            
+        with col2:
+            st.write('StartDate')
+            st.write('2010-01-01')
+            st.write('2010-01-01')
+            st.write('2010-01-01')
+            st.write('2010-01-01')
+            st.write('2010-01-01')
+            st.write('2010-01-01')         
+            st.write('2010-01-01')
+            st.write('2010-01-01')
+            st.write('2010-01-01')
+            st.write('2010-01-01')            
+            st.write('2010-01-01')
+            st.write('2010-01-01')
+    
+        with col3:
+            st.write('EndDate')
+            st.write('2010-01-01')
+            st.write('2010-01-01')
+            st.write('2010-01-01')
+            st.write('2010-01-01')
+            st.write('2010-01-01')
+            st.write('2010-01-01')         
+            st.write('2010-01-01')
+            st.write('2010-01-01')
+            st.write('2010-01-01')
+            st.write('2010-01-01')            
+            st.write('2010-01-01')
+            st.write('2010-01-01')        
+        with col4:
+            st.write('Interval')
+            st.write('1 Day')
+            st.write('1 Hour')
+            st.write('15 Min')
+            st.write('5 Min')
+            st.write('1 Day')
+            st.write('1 Hour')         
+            st.write('15 Min')
+            st.write('5 Min')
+            st.write('1 Day')
+            st.write('1 Hour')            
+            st.write('15 Min')
+            st.write('5 Min')
+
+        with col5:
+            st.write('Refresh')
+            st.button('Refresh N100',key='1')
+            st.button('Refresh NIndex',key='2')
+            st.button('Refresh NOptions',key='3')
+           
+            
             
 elif st.session_state["authentication_status"] is False:
     st.error('Username/password is incorrect')
