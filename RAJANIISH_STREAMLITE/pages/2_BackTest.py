@@ -43,9 +43,15 @@ try:
             target_uploaded_file = st.file_uploader("Choose a exitPoint CSV file", type="csv",key='t',disabled= (interval_T == '15M') )
             if target_uploaded_file is not None:
                 target_data = pd.read_csv(target_uploaded_file)    
+
+            col1, col2,col3, col4  = st.columns([2, 2, 2, 2]) 
+            with col1:
+                risk = st.text_input(label="Risk Pct",value="5",disabled= (interval_T != '15M') ,key=34)        
+            with col2:
+                rewards = st.text_input(label="Reward Pct",value="15",disabled= (interval_T != '15M') ,key=35)
                 
-            
-            
+                
+
             
             if st.button('Start Analysis', help="red",key='ff'):    
                 if interval_T == '15M':
@@ -328,6 +334,8 @@ case when substr(date,11,15) <> '' then ' '
                 
                     db.drop_data('ENTRY_TAB_P',usr_db)
                     df = db.get_data("""select a.*, b.Close, 
+cast( b.close as real) * (( 100 + """ + rewards + """)/100)     as reward_price,
+cast( b.close as real) * (( 100 - """ + risk + """)/100)     as risk_price ,                 
 (
 select max(cast(High as REAL ))  from N100_OHLC_15M b1 
 where a.symbol = b1.ticker
@@ -347,7 +355,10 @@ and datetime(a.date) = datetime(b.datetime)""",usr_db)
                     db.insert_data('ENTRY_TAB_P', df,usr_db )                  
 
                     db.drop_data('ENTRY_TAB_q',usr_db)
-                    df = db.get_data("""select a.*,
+                    df = db.get_data("""select a.*, case when risk_time < reward_time then 'Loss'
+                                     else 'profit' end as pl from 
+                                     
+(select a.*,
 (select min(b1.datetime)  from N100_OHLC_15M b1 
 where a.symbol = b1.ticker
 and date(substr(a.date,1,10)) = date(substr(b1.datetime,1,10))
@@ -361,8 +372,20 @@ and CAST(b1.lOW AS REAL) = CAST(A.Min_lOW AS REAL)
 and datetime(a.date) < datetime(b1.datetime)
  ) as mIN_time,
 max_High -  CLOSE AS hmc,
-mIN_LOW -  CLOSE AS Lmc
-from ENTRY_TAB_P a
+mIN_LOW -  CLOSE AS Lmc,
+(select min(b1.datetime)  from N100_OHLC_15M b1 
+where a.symbol = b1.ticker
+and date(substr(a.date,1,10)) = date(substr(b1.datetime,1,10))
+and CAST(b1.high AS REAL) < CAST(A.reward_price AS REAL)
+and datetime(a.date) < datetime(b1.datetime)
+ ) as reward_time,
+(select min(b1.datetime)  from N100_OHLC_15M b1 
+where a.symbol = b1.ticker
+and date(substr(a.date,1,10)) = date(substr(b1.datetime,1,10))
+and CAST(b1.lOW AS REAL) < CAST(A.reward_price AS REAL)
+and datetime(a.date) < datetime(b1.datetime)
+ ) as risk_time
+from ENTRY_TAB_P a) a
 """,usr_db)
                     db.insert_data('ENTRY_TAB_q', df,usr_db )                     
                     df.to_excel(writer, sheet_name='Sheet2', index=False)      
