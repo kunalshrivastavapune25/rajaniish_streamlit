@@ -2,6 +2,8 @@ import pandas as pd
 import Database as db
 import datetime as dt
 import yfinance as yf
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def get_delta_data(TABLE_NAME ,DB_NAME ,INTERVAL ):
     
@@ -12,8 +14,11 @@ def get_delta_data(TABLE_NAME ,DB_NAME ,INTERVAL ):
         
     df_full = pd.DataFrame()
     for index, row in df.iterrows():
-        
-        if dt.datetime.strptime(row['START_DATE'], '%Y-%m-%d %H:%M:%S').date() >= dt.datetime.today().date(): 
+        if dt.datetime.today().weekday() in [5, 6]:  # Saturday (5) or Sunday (6)
+            mod_date = (dt.datetime.today() - dt.timedelta(days=1)).date()
+        else:
+            mod_date = dt.datetime.today().date()
+        if dt.datetime.strptime(row['START_DATE'], '%Y-%m-%d %H:%M:%S').date() >= mod_date: 
             pass
         else:    
             start_date = row['START_DATE'].strip()  # Remove leading and trailing whitespace
@@ -74,5 +79,55 @@ df_full_ret =  get_delta_data(TABLE_NAME = 'NINDEX_OHLC_1D',
                    INTERVAL = '1D')
 
 
+
+import oracledb
+import random
+import numpy as np
+# Establish connection
+connection = oracledb.connect(
+    user="admin",
+    password="Gudiya@123456",
+    dsn="rajaniishdb_high",
+    config_dir=r"C:\Tools\Oracle Wallet\Wallet_RAJANIISHDB",
+    wallet_location=r"C:\Tools\Oracle Wallet\Wallet_RAJANIISHDB",
+    wallet_password="Gudiya@1"
+)
+
+# Check connection version
+print(connection.version)
+
+# Execute query
+cursor = connection.cursor()
+try:
+    cursor.execute("DROP TABLE random_table")
+except:
+    pass
+
+cursor.execute("""
+    CREATE TABLE random_table (
+        id date,
+        log_msg VARCHAR(100)
+    )
+""")
+
+
+cursor.execute("INSERT INTO random_table VALUES (sysdate,'done')")
+
+
+connection.commit()
+
+
+
+
+
+
+
+
+
+
+
+# Close cursor and connection
+cursor.close()
+connection.close()
 
 
