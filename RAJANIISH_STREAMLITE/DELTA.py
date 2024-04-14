@@ -44,6 +44,21 @@ def get_delta_data(TABLE_NAME ,DB_NAME ,INTERVAL ):
         db.insert_data(TABLE_NAME, df_full,DB_NAME)
     return df_full
 
+def cleanup_data(TABLE_NAME ,DB_NAME ,INTERVAL ):
+    print("""delete from """ + TABLE_NAME + """ where rowid not in (
+        select max(rowid)  from """ + TABLE_NAME + """
+        group by ticker,datetime)""")
+    print(DB_NAME)
+    db.execute_qry("""delete from """ + TABLE_NAME + """ where rowid not in (
+        select max(rowid)  from """ + TABLE_NAME + """
+        group by ticker,datetime)""",DB_NAME)
+    df = db.get_data("""select ticker,datetime,count(1)  
+     from """ + TABLE_NAME + """
+     group by ticker,datetime order by 3 desc""" ,DB_NAME)
+    return df
+
+
+
 
 df_full_ret =  get_delta_data(TABLE_NAME = 'N100_OHLC_15M', 
                    DB_NAME = 'C:\\NSE\\SA.sqliteDB_NIFTY100_15M',
@@ -77,6 +92,45 @@ df_full_ret =  get_delta_data(TABLE_NAME = 'NINDEX_OHLC_1H',
 df_full_ret =  get_delta_data(TABLE_NAME = 'NINDEX_OHLC_1D', 
                    DB_NAME = 'C:\\NSE\\SA.sqliteDB_NIFTYINDEX_1D',
                    INTERVAL = '1D')
+
+
+
+
+
+
+df_full_ret =  cleanup_data(TABLE_NAME = 'N100_OHLC_15M', 
+                   DB_NAME = 'C:\\NSE\\SA.sqliteDB_NIFTY100_15M',
+                   INTERVAL = '15m')
+
+df_full_ret =  cleanup_data(TABLE_NAME = 'N100_OHLC_5M', 
+                   DB_NAME = 'C:\\NSE\\SA.sqliteDB_NIFTY100_5M',
+                   INTERVAL = '5m')
+
+df_full_ret =  cleanup_data(TABLE_NAME = 'N100_OHLC_1H', 
+                   DB_NAME = 'C:\\NSE\\SA.sqliteDB_NIFTY100_1H',
+                   INTERVAL = '1H')
+
+df_full_ret =  cleanup_data(TABLE_NAME = 'N100_OHLC_1D', 
+                   DB_NAME = 'C:\\NSE\\SA.sqliteDB_NIFTY100_1D',
+                   INTERVAL = '1D')
+
+
+df_full_ret =  cleanup_data(TABLE_NAME = 'NINDEX_OHLC_15M', 
+                   DB_NAME = 'C:\\NSE\\SA.sqliteDB_NIFTYINDEX_15M',
+                   INTERVAL = '15m')
+
+df_full_ret =  cleanup_data(TABLE_NAME = 'NINDEX_OHLC_5M', 
+                   DB_NAME = 'C:\\NSE\\SA.sqliteDB_NIFTYINDEX_5M',
+                   INTERVAL = '5m')
+
+df_full_ret =  cleanup_data(TABLE_NAME = 'NINDEX_OHLC_1H', 
+                   DB_NAME = 'C:\\NSE\\SA.sqliteDB_NIFTYINDEX_1H',
+                   INTERVAL = '1H')
+
+df_full_ret =  cleanup_data(TABLE_NAME = 'NINDEX_OHLC_1D', 
+                   DB_NAME = 'C:\\NSE\\SA.sqliteDB_NIFTYINDEX_1D',
+                   INTERVAL = '1D')
+
 
 
 
