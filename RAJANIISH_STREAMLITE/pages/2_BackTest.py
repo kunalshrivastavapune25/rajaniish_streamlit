@@ -39,7 +39,7 @@ try:
             if entry_uploaded_file is not None:
                 entry_data = pd.read_csv(entry_uploaded_file)
                 
-            target_uploaded_file = st.file_uploader("Choose a exitPoint CSV file", type="csv",key='t',disabled= (interval_T == '15M') )
+            target_uploaded_file = st.file_uploader("Choose a exitPoint CSV file", type="csv",key='t' )
             if target_uploaded_file is not None:
                 target_data = pd.read_csv(target_uploaded_file)    
 
@@ -80,24 +80,25 @@ try:
                 st.success(target_data_tab_name + ' Created !!') 
                 
                 db.execute_qry("""update entry_tab set date = 
-case when date  like '__-__-____' then 
- substr(date,7,4) 
-    || '-' || 
-    substr(date,4,2) 
-    || '-' || 
-    substr(date,1,2) 
-    || 
-    case when substr(date,11,15) <> '' then '-' || substr(date,11,15) else '' end
-else 
-	substr(date,7,4) 
-|| '-' || 
-substr(date,4,2) 
-|| '-' || 
-substr(date,1,2) 
-|| 
-case when substr(date,11,15) <> '' then ' ' 
-|| case when cast(substr(date,12,2) as int) in (1,2,3,4,5) then cast(substr(date,12,2) as int) + 12 else substr(date,12,2) end   || ':' || substr(date,15,2) || ':00' else '' end
-end	 """,usr_db)
+    replace(CASE
+        WHEN date LIKE '%-%-% % %m'
+            THEN
+                SUBSTR(date, 7, 4) || '-' ||  -- Extract year
+                SUBSTR(date, 4, 2) || '-' ||  -- Extract day
+                SUBSTR(date, 1, 2) || ' ' ||  -- Extract month
+                CASE
+                    WHEN date LIKE '% pm' and cast(SUBSTR(date, 12, 2) AS INTEGER) <> 12
+                        THEN
+                            CAST((CAST(SUBSTR(date, 12, 2) AS INTEGER) + 12) AS TEXT) || ':' ||  -- Convert hour to 24-hour format
+                            SUBSTR(date, instr('01-04-2024 2:15 pm',':') +1, 2) || ':00'
+                    ELSE
+                        SUBSTR(date, 12, 5) || ':00'
+                END
+        ELSE
+                SUBSTR(date, 7, 4) || '-' ||  -- Extract year
+                SUBSTR(date, 4, 2) || '-' ||  -- Extract day
+                SUBSTR(date, 1, 2)   -- Extract month
+    END,' :',':')	 """,usr_db)
 
                 target_data_tab_name = 'EXIT_TAB'
                 target_data.to_excel(writer, sheet_name='Sheet2', index=False)
@@ -105,24 +106,25 @@ end	 """,usr_db)
                 db.insert_data(target_data_tab_name, target_data,usr_db )  
                 st.success(target_data_tab_name + ' Created !!')           
                 db.execute_qry("""update exit_tab set date = 
-case when date  like '__-__-____' then 
- substr(date,7,4) 
-    || '-' || 
-    substr(date,4,2) 
-    || '-' || 
-    substr(date,1,2) 
-    || 
-    case when substr(date,11,15) <> '' then '-' || substr(date,11,15) else '' end
-else 
-	substr(date,7,4) 
-|| '-' || 
-substr(date,4,2) 
-|| '-' || 
-substr(date,1,2) 
-|| 
-case when substr(date,11,15) <> '' then ' ' 
-|| case when cast(substr(date,12,2) as int) in (1,2,3,4,5) then cast(substr(date,12,2) as int) + 12 else substr(date,12,2) end   || ':' || substr(date,15,2) || ':00' else '' end
-end	 """,usr_db)
+    replace(CASE
+        WHEN date LIKE '%-%-% % %m'
+            THEN
+                SUBSTR(date, 7, 4) || '-' ||  -- Extract year
+                SUBSTR(date, 4, 2) || '-' ||  -- Extract day
+                SUBSTR(date, 1, 2) || ' ' ||  -- Extract month
+                CASE
+                    WHEN date LIKE '% pm' and cast(SUBSTR(date, 12, 2) AS INTEGER) <> 12
+                        THEN
+                            CAST((CAST(SUBSTR(date, 12, 2) AS INTEGER) + 12) AS TEXT) || ':' ||  -- Convert hour to 24-hour format
+                            SUBSTR(date, instr('01-04-2024 2:15 pm',':') +1, 2) || ':00'
+                    ELSE
+                        SUBSTR(date, 12, 5) || ':00'
+                END
+        ELSE
+                SUBSTR(date, 7, 4) || '-' ||  -- Extract year
+                SUBSTR(date, 4, 2) || '-' ||  -- Extract day
+                SUBSTR(date, 1, 2)   -- Extract month
+    END,' :',':')	 """,usr_db)
                 db.create_index("I2",target_data_tab_name,"date(date)",usr_db)
                 
                 
