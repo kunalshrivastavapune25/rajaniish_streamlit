@@ -26,13 +26,13 @@ def get_full_data():
     # Please note that you need to copy the request token from URL and paste in this code and start the code within 30s.
     #client.get_oauth_session('Your Response Token')
     
-    client.get_oauth_session('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjU1NjM4MzAwIiwicm9sZSI6InpJSW1CdkhRY0tTMzdLTmJlZkxuNU5PczZpb2lZQUNtIiwiU3RhdGUiOiIiLCJuYmYiOjE3MDkzNTIzODEsImV4cCI6MTcwOTM1MjQ0MSwiaWF0IjoxNzA5MzUyMzgxfQ.Mok_f4T7gf5lgR0VRUKcqDKQLYpJy3jxQnFU7k387yA')
+    client.get_oauth_session('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjU1NjM4MzAwIiwicm9sZSI6InpJSW1CdkhRY0tTMzdLTmJlZkxuNU5PczZpb2lZQUNtIiwiU3RhdGUiOiIiLCJuYmYiOjE3MTQ4MzM2ODcsImV4cCI6MTcxNDgzNzI4NywiaWF0IjoxNzE0ODMzNjg3fQ.vtWteKlgOeGt4BlD-639YzS0Hny3TYjDBsFYxLimkNk')
     
     #historical_data(exchange,exchange type,scrip code,time frame,from data,to date)
     #https://images.5paisa.com/website/scripmaster-csv-format.csv
     # Note : TimeFrame Should be from this list ['1m','5m','10m','15m','30m','60m','1d']
     
-    df_nse_100 = pd.read_csv("C:/NSE/STOCKS/ind_nifty100list.csv")
+    df_nse_100 = pd.read_csv("C:/NSE/STOCKS/ind_nifty500list_V1.csv")
     ohlcv = {}
     for index, row in df_nse_100.iterrows():
         print(row['Symbol'], row['sccode'])
@@ -79,7 +79,7 @@ def get_full_data():
         df18=client.historical_data('N','C',row['sccode'],'1d','2019-06-17','2019-12-16')        
         
         #print(df1)
-        df18=client.historical_data('N','C',row['sccode'],'1d','2019-12-17','2020-06-16')
+        df19=client.historical_data('N','C',row['sccode'],'1d','2019-12-17','2020-06-16')
         #print(df1)
         df20=client.historical_data('N','C',row['sccode'],'1d','2020-06-17','2020-12-16')
                 
@@ -96,12 +96,26 @@ def get_full_data():
         #print(df5)
         df26=client.historical_data('N','C',row['sccode'],'1d','2023-06-17','2023-12-16')
         #print(df6)
-        df27=client.historical_data('N','C',row['sccode'],'1d','2023-12-17','2024-03-02')
+        df27=client.historical_data('N','C',row['sccode'],'1d','2023-12-17','2024-05-02')
         #print(df7)
+        #df28=client.historical_data('N','C',row['sccode'],'1d','2024-06-17','2024-12-16')
+        #print(df4)
+        #df29=client.historical_data('N','C',row['sccode'],'1d','2024-12-17','2025-06-16')
+        #print(df5)
+        #df30=client.historical_data('N','C',row['sccode'],'1d','2025-06-17','2025-12-16')
+        #print(df6)
+        #df31=client.historical_data('N','C',row['sccode'],'1d','2025-12-17','2026-03-02')
+        #print(df7)
+      
         
+      
+        
+      
+        
+      
         df = pd.concat([df1, df2, df3, df4, df5, df6, df7, df8, df9, df10,
-                        df11, df12, df13, df14, df15, df16, df17, df18,  df20,
-                        df21, df22, df23, df24, df25, df26, df27], ignore_index=True)
+                        df11, df12, df13, df14, df15, df16, df17, df18,df19,  df20,
+                        df21, df22, df23, df24, df25, df26, df27    ], ignore_index=True)
         ohlcv[row['Symbol']] = df
    
     tickers = df_nse_100["Symbol"].to_list()
